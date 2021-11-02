@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import os
 import json
+import imutils
 VIDEOS_DIR=r"/Users/seawavve/Desktop/swing_PBL/swingmybaby1 2/"
 FILE_NAME=r"gyro_swings1"
 
@@ -26,6 +27,7 @@ def get_preprocessed_video():
         if ret==True:
             cnt+=1
             print('NOW output FRAME:', cnt)
+            frame = imutils.resize(frame, width=500)
             cv2.imwrite("/Users/seawavve/Desktop/swing_PBL/img/"+FILE_NAME+"/frame%d.jpg" % cnt, frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
