@@ -85,26 +85,26 @@ else:
 print("input_shape_model = {}".format(input_shape_model))
 print("output_shape_model = {}".format(output_shape_model))
 
-# Apply transformations to all images
-class ImageTransformer(object):
+# # Apply transformations to all images
+# class ImageTransformer(object):
 
-    def __init__(self, shape_resize):
-        self.shape_resize = shape_resize
+#     def __init__(self, shape_resize):
+#         self.shape_resize = shape_resize
 
-    def __call__(self, img):
-        img_transformed = resize_img(img, self.shape_resize)
-        img_transformed = normalize_img(img_transformed)
-        return img_transformed
+#     def __call__(self, img):
+#         img_transformed = resize_img(img, self.shape_resize)
+#         img_transformed = normalize_img(img_transformed)
+#         return img_transformed
 
-transformer = ImageTransformer(shape_img_resize)
-print("Applying image transformer to training images...")
-imgs_train_transformed = apply_transformer(imgs_train, transformer, parallel=parallel)
-print("Applying image transformer to test images...")
-imgs_test_transformed = apply_transformer(imgs_test, transformer, parallel=parallel)
+# transformer = ImageTransformer(shape_img_resize)
+# print("Applying image transformer to training images...")
+# imgs_train_transformed = apply_transformer(imgs_train, transformer, parallel=parallel)
+# print("Applying image transformer to test images...")
+# imgs_test_transformed = apply_transformer(imgs_test, transformer, parallel=parallel)
 
 # Convert images to numpy array
-X_train = np.array(imgs_train_transformed).reshape((-1,) + input_shape_model)
-X_test = np.array(imgs_test_transformed).reshape((-1,) + input_shape_model)
+X_train = np.array(imgs_train).reshape((-1,) + input_shape_model)
+X_test = np.array(imgs_test).reshape((-1,) + input_shape_model)
 print(" -> X_train.shape = {}".format(X_train.shape))
 print(" -> X_test.shape = {}".format(X_test.shape))
 
