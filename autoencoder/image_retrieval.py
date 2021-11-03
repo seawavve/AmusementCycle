@@ -1,11 +1,8 @@
 """
-
  image_retrieval.py  (author: Anson Wong / git: ankonzoid)
-
  We perform image retrieval using transfer learning on a pre-trained
  VGG image classifier. We plot the k=5 most similar images to our
  query images, as well as the t-SNE visualizations.
-
 """
 import os
 import numpy as np
@@ -16,7 +13,6 @@ from src.CV_transform_utils import apply_transformer
 from src.CV_transform_utils import resize_img, normalize_img
 from src.CV_plot_utils import plot_query_retrieval, plot_tsne, plot_reconstructions
 from src.autoencoder import AutoEncoder
-import numpy as np
 
 # Run mode: (autoencoder -> simpleAE, convAE) or (transfer learning -> vgg19)
 modelName = "convAE"  # try: "simpleAE", "convAE", "vgg19"
@@ -24,8 +20,8 @@ trainModel = True
 parallel = True  # use multicore processing
 
 # Make paths
-dataTrainDir = os.path.join(os.getcwd(), "data", "train")
-dataTestDir = os.path.join(os.getcwd(), "data", "test")
+dataTrainDir = os.path.join("/content/drive/MyDrive/swing_PBL/data","train")
+dataTestDir = os.path.join("/content/drive/MyDrive/swing_PBL/data", "test")
 outDir = os.path.join(os.getcwd(), "output", modelName)
 if not os.path.exists(outDir):
     os.makedirs(outDir)
@@ -36,6 +32,7 @@ print("Reading train images from '{}'...".format(dataTrainDir))
 imgs_train = read_imgs_dir(dataTrainDir, extensions, parallel=parallel)
 print("Reading test images from '{}'...".format(dataTestDir))
 imgs_test = read_imgs_dir(dataTestDir, extensions, parallel=parallel)
+# print(imgs_train)
 shape_img = imgs_train[0].shape
 print("Image shape = {}".format(shape_img))
 
@@ -85,26 +82,26 @@ else:
 print("input_shape_model = {}".format(input_shape_model))
 print("output_shape_model = {}".format(output_shape_model))
 
-# # Apply transformations to all images
-# class ImageTransformer(object):
+# Apply transformations to all images
+class ImageTransformer(object):
 
-#     def __init__(self, shape_resize):
-#         self.shape_resize = shape_resize
+    def __init__(self, shape_resize):
+        self.shape_resize = shape_resize
 
-#     def __call__(self, img):
-#         img_transformed = resize_img(img, self.shape_resize)
-#         img_transformed = normalize_img(img_transformed)
-#         return img_transformed
+    def __call__(self, img):
+        img_transformed = resize_img(img, self.shape_resize)
+        img_transformed = normalize_img(img_transformed)
+        return img_transformed
 
-# transformer = ImageTransformer(shape_img_resize)
-# print("Applying image transformer to training images...")
-# imgs_train_transformed = apply_transformer(imgs_train, transformer, parallel=parallel)
-# print("Applying image transformer to test images...")
-# imgs_test_transformed = apply_transformer(imgs_test, transformer, parallel=parallel)
+transformer = ImageTransformer(shape_img_resize)
+print("Applying image transformer to training images...")
+imgs_train_transformed = apply_transformer(imgs_train, transformer, parallel=parallel)
+print("Applying image transformer to test images...")
+imgs_test_transformed = apply_transformer(imgs_test, transformer, parallel=parallel)
 
 # Convert images to numpy array
-X_train = np.array(imgs_train).reshape((-1,) + input_shape_model)
-X_test = np.array(imgs_test).reshape((-1,) + input_shape_model)
+X_train = np.array(imgs_train_transformed).reshape((-1,) + input_shape_model)
+X_test = np.array(imgs_test_transformed).reshape((-1,) + input_shape_model)
 print(" -> X_train.shape = {}".format(X_train.shape))
 print(" -> X_test.shape = {}".format(X_test.shape))
 
@@ -132,8 +129,6 @@ print(" -> E_test_flatten.shape = {}".format(E_test_flatten.shape))
 if modelName in ["simpleAE", "convAE"]:
     print("Visualizing database image reconstructions...")
     imgs_train_reconstruct = model.decoder.predict(E_train)
-    #print(np.shape(imgs_train_reconstruct))
-    #print(imgs_train_reconstruct)
     if modelName == "simpleAE":
         imgs_train_reconstruct = imgs_train_reconstruct.reshape((-1,) + shape_img_resize)
     plot_reconstructions(imgs_train, imgs_train_reconstruct,
@@ -146,17 +141,21 @@ print("Fitting k-nearest-neighbour model on training images...")
 knn = NearestNeighbors(n_neighbors=5, metric="cosine")
 knn.fit(E_train_flatten)
 
+dim2_array=[]
 # Perform image retrieval on test images
-# ----------------------dists is the KEY------------------ 
 print("Performing image retrieval on test images...")
 for i, emb_flatten in enumerate(E_test_flatten):
     dists, indices = knn.kneighbors([emb_flatten]) # find k nearest train neighbours
-    print('dists: ',dists)
-    print('indices: ',indices)
+    # print('dists: ',dists)
+    # print('indices: ',indices)
+    dim2_array.append(dists)
     img_query = imgs_test[i] # query image
     imgs_retrieval = [imgs_train[idx] for idx in indices.flatten()] # retrieval images
     outFile = os.path.join(outDir, "{}_retrieval_{}.png".format(modelName, i))
     plot_query_retrieval(img_query, imgs_retrieval, outFile)
+plt.title('TSM')
+plt.imshow(dim2_array, cmap='hot', interpolation='nearest')
+plt.savefig('TSM.png', dpi=300)
 
 # Plot t-SNE visualization
 print("Visualizing t-SNE on training images...")
