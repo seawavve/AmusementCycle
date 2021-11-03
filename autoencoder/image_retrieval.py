@@ -13,6 +13,7 @@ from src.CV_transform_utils import apply_transformer
 from src.CV_transform_utils import resize_img, normalize_img
 from src.CV_plot_utils import plot_query_retrieval, plot_tsne, plot_reconstructions
 from src.autoencoder import AutoEncoder
+import matplotlib.pyplot as plt
 
 # Run mode: (autoencoder -> simpleAE, convAE) or (transfer learning -> vgg19)
 modelName = "convAE"  # try: "simpleAE", "convAE", "vgg19"
@@ -148,11 +149,12 @@ for i, emb_flatten in enumerate(E_test_flatten):
     dists, indices = knn.kneighbors([emb_flatten]) # find k nearest train neighbours
     # print('dists: ',dists)
     # print('indices: ',indices)
-    dim2_array.append(dists)
+    dim2_array.append(dists[0])
     img_query = imgs_test[i] # query image
     imgs_retrieval = [imgs_train[idx] for idx in indices.flatten()] # retrieval images
     outFile = os.path.join(outDir, "{}_retrieval_{}.png".format(modelName, i))
     plot_query_retrieval(img_query, imgs_retrieval, outFile)
+#print(dim2_array)
 plt.title('TSM')
 plt.imshow(dim2_array, cmap='hot', interpolation='nearest')
 plt.savefig('TSM.png', dpi=300)
