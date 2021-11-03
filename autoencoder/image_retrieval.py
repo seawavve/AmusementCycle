@@ -126,40 +126,40 @@ print(" -> E_test.shape = {}".format(E_test.shape))
 print(" -> E_train_flatten.shape = {}".format(E_train_flatten.shape))
 print(" -> E_test_flatten.shape = {}".format(E_test_flatten.shape))
 
-# Make reconstruction visualizations
-if modelName in ["simpleAE", "convAE"]:
-    print("Visualizing database image reconstructions...")
-    imgs_train_reconstruct = model.decoder.predict(E_train)
-    if modelName == "simpleAE":
-        imgs_train_reconstruct = imgs_train_reconstruct.reshape((-1,) + shape_img_resize)
-    plot_reconstructions(imgs_train, imgs_train_reconstruct,
-                         os.path.join(outDir, "{}_reconstruct.png".format(modelName)),
-                         range_imgs=[0, 255],
-                         range_imgs_reconstruct=[0, 1])
+# # Make reconstruction visualizations
+# if modelName in ["simpleAE", "convAE"]:
+#     print("Visualizing database image reconstructions...")
+#     imgs_train_reconstruct = model.decoder.predict(E_train)
+#     if modelName == "simpleAE":
+#         imgs_train_reconstruct = imgs_train_reconstruct.reshape((-1,) + shape_img_resize)
+#     plot_reconstructions(imgs_train, imgs_train_reconstruct,
+#                          os.path.join(outDir, "{}_reconstruct.png".format(modelName)),
+#                          range_imgs=[0, 255],
+#                          range_imgs_reconstruct=[0, 1])
 
-# Fit kNN model on training images
-print("Fitting k-nearest-neighbour model on training images...")
-knn = NearestNeighbors(n_neighbors=5, metric="cosine")
-knn.fit(E_train_flatten)
+# # Fit kNN model on training images
+# print("Fitting k-nearest-neighbour model on training images...")
+# knn = NearestNeighbors(n_neighbors=5, metric="cosine")
+# knn.fit(E_train_flatten)
 
-dim2_array=[]
-# Perform image retrieval on test images
-print("Performing image retrieval on test images...")
-for i, emb_flatten in enumerate(E_test_flatten):
-    dists, indices = knn.kneighbors([emb_flatten]) # find k nearest train neighbours
-    # print('dists: ',dists)
-    # print('indices: ',indices)
-    dim2_array.append(dists[0])
-    img_query = imgs_test[i] # query image
-    imgs_retrieval = [imgs_train[idx] for idx in indices.flatten()] # retrieval images
-    outFile = os.path.join(outDir, "{}_retrieval_{}.png".format(modelName, i))
-    plot_query_retrieval(img_query, imgs_retrieval, outFile)
-#print(dim2_array)
-plt.title('TSM')
-plt.imshow(dim2_array, cmap='hot', interpolation='nearest')
-plt.savefig('TSM.png', dpi=300)
+# dim2_array=[]
+# # Perform image retrieval on test images
+# print("Performing image retrieval on test images...")
+# for i, emb_flatten in enumerate(E_test_flatten):
+#     dists, indices = knn.kneighbors([emb_flatten]) # find k nearest train neighbours
+#     # print('dists: ',dists)
+#     # print('indices: ',indices)
+#     dim2_array.append(dists[0])
+#     img_query = imgs_test[i] # query image
+#     imgs_retrieval = [imgs_train[idx] for idx in indices.flatten()] # retrieval images
+#     outFile = os.path.join(outDir, "{}_retrieval_{}.png".format(modelName, i))
+#     plot_query_retrieval(img_query, imgs_retrieval, outFile)
+# #print(dim2_array)
+# plt.title('TSM')
+# plt.imshow(dim2_array, cmap='hot', interpolation='nearest')
+# plt.savefig('TSM.png', dpi=300)
 
-# Plot t-SNE visualization
-print("Visualizing t-SNE on training images...")
-outFile = os.path.join(outDir, "{}_tsne.png".format(modelName))
-plot_tsne(E_train_flatten, imgs_train, outFile)
+# # Plot t-SNE visualization
+# print("Visualizing t-SNE on training images...")
+# outFile = os.path.join(outDir, "{}_tsne.png".format(modelName))
+# plot_tsne(E_train_flatten, imgs_train, outFile)
